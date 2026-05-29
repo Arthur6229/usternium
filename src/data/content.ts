@@ -1,4 +1,4 @@
-export type TopicId = 'math' | 'vocab' | 'funfacts' | 'science' | 'history' | 'philosophy' | 'wellness' | 'tech';
+export type TopicId = 'math' | 'vocab' | 'funfacts' | 'science' | 'history' | 'philosophy' | 'wellness' | 'tech' | 'coding' | 'music' | 'language';
 
 export interface Topic {
   id: TopicId;
@@ -25,6 +25,9 @@ export const topics: Topic[] = [
   { id: 'philosophy',  label: 'Philosophy',  emoji: '💡', color: '#8b5cf6', gradient: 'linear-gradient(135deg,#8b5cf6,#7c3aed)', description: 'Quotes and ideas to live by' },
   { id: 'wellness',    label: 'Wellness',    emoji: '🌱', color: '#14b8a6', gradient: 'linear-gradient(135deg,#14b8a6,#0d9488)', description: 'Daily tips for mind and body' },
   { id: 'tech',        label: 'Tech',        emoji: '💻', color: '#f97316', gradient: 'linear-gradient(135deg,#f97316,#ea580c)', description: 'How the digital world works' },
+  { id: 'coding',      label: 'Coding',      emoji: '🖥️', color: '#22c55e', gradient: 'linear-gradient(135deg,#22c55e,#16a34a)', description: 'Programming concepts explained simply' },
+  { id: 'music',       label: 'Music',       emoji: '🎵', color: '#ec4899', gradient: 'linear-gradient(135deg,#ec4899,#db2777)', description: 'Theory, history, and how music works' },
+  { id: 'language',    label: 'Languages',   emoji: '🌐', color: '#06b6d4', gradient: 'linear-gradient(135deg,#06b6d4,#0891b2)', description: 'Linguistics and language learning tips' },
 ];
 
 const library: Record<TopicId, DailyItem[]> = {
@@ -1009,6 +1012,381 @@ const library: Record<TopicId, DailyItem[]> = {
       body: 'Google\'s Sycamore (2019) solved a specific problem in 200 seconds that would take classical computers 10,000 years. But the problem was specifically designed for quantum computers.',
       detail: 'No quantum computer has solved a useful real-world problem faster than a classical computer. The hardware is extraordinarily fragile — qubits must be cooled to near absolute zero and are disrupted by the slightest environmental interference.',
       example: 'Google\'s "quantum supremacy" result: a sampling problem that\'s useless in practice but hard for classical computers. IBM disputed even that claim. Current quantum computers can factor small numbers and simulate simple molecules. Cracking encryption or solving logistics problems at scale: not yet, and maybe not for decades.',
+    },
+  ],
+
+  coding: [
+    {
+      title: 'DRY: Don\'t Repeat Yourself',
+      body: 'Every piece of knowledge should have a single, authoritative representation in a system. Duplication means two places to update — and one will always be wrong.',
+      detail: 'DRY doesn\'t just mean "don\'t copy-paste code." It means don\'t repeat business logic, configuration, or intent anywhere in the system. The opposite of DRY is WET: Write Everything Twice.',
+      example: 'You calculate a user\'s discount in the cart component and again in the checkout component. Six months later, discount rules change — you update one and forget the other. Customers get different prices. One function called in both places would have prevented the bug entirely.',
+    },
+    {
+      title: 'Big O Notation',
+      body: 'Big O describes how an algorithm\'s runtime or memory scales as input grows. O(1) = constant, O(n) = linear, O(n²) = quadratic.',
+      detail: 'Big O ignores constants and small inputs — it describes behavior at scale. An O(n²) algorithm with a small dataset may be faster than O(n log n), but at a million records the quadratic one is catastrophically slower.',
+      example: 'Finding an item in a sorted list by scanning from the start: O(n) — 1 million items = 1 million checks. Binary search: O(log n) — 1 million items = only 20 checks. Same task, 50,000× fewer operations. That difference is why Big O matters.',
+    },
+    {
+      title: 'Recursion Explained',
+      body: 'A function that calls itself with a smaller version of the same problem. It must have a base case (stopping condition) or it runs forever.',
+      detail: 'Any loop can be rewritten as recursion and vice versa. Recursion is natural for problems that are self-similar: tree traversal, file system navigation, fractal generation. The call stack stores each function call until the base case is hit.',
+      example: 'Factorial of 5: 5! = 5 × 4! = 5 × 4 × 3! = ... = 5×4×3×2×1 = 120. In code: `factorial(n) { if n==1 return 1; return n * factorial(n-1); }`. Each call waits for the next — when it hits 1, the answers bubble back up and multiply.',
+    },
+    {
+      title: 'Naming Is the Hardest Part',
+      body: '"There are only two hard things in Computer Science: cache invalidation and naming things." — Phil Karlton',
+      detail: 'Good names make code self-documenting. Bad names require comments, cause misunderstandings, and outlast the intent behind them. A variable named `data` or `temp` or `x` tells you nothing and costs everyone who reads it.',
+      example: 'Which is clearer: `if (d > 86400)` or `if (sessionAgeInSeconds > ONE_DAY_IN_SECONDS)`? The second one explains itself. You shouldn\'t need to remember that 86400 seconds = 1 day. The name carries the meaning so the comment doesn\'t have to.',
+    },
+    {
+      title: 'What a Hash Table Actually Does',
+      body: 'A hash table converts a key into an array index using a hash function, enabling O(1) average-case lookup — regardless of how many items are stored.',
+      detail: 'Collisions (two keys hashing to the same index) are handled by chaining or probing. In the worst case with many collisions, lookup degrades to O(n) — this is why hash function quality matters.',
+      example: 'A phone book of 1 million contacts: searching by name takes O(log n) with binary search (~20 checks) or O(n) linearly. A hash table looks up "Smith, John" in essentially 1 step — it converts "Smith, John" to an index and reads directly. This is why dictionaries and objects in code are so fast.',
+    },
+    {
+      title: 'Off-By-One Errors',
+      body: 'The most common bug in programming: your loop runs one too many times or one too few. Caused by confusion between < and <=, or 0-indexing vs 1-indexing.',
+      detail: 'Also called a "fencepost error" — if you have 10 fence posts in a row, how many gaps are there? 9. People often say 10. Counting the gaps vs. counting the posts is off-by-one.',
+      example: 'A list of 5 items is indexed 0 through 4. If you loop `for i in 1..5` you access index 5 — which doesn\'t exist. If you loop `for i in 0..4` you process all 5. That single < vs <= difference is responsible for an enormous fraction of all software bugs ever written.',
+    },
+    {
+      title: 'The Boolean Trap',
+      body: 'Passing `true` or `false` into a function is a code smell. It means the function is doing two different things and should be two separate functions.',
+      detail: 'When you see `sendEmail(user, true)` in code, you have to find the function definition to know what `true` means. `sendWelcomeEmail(user)` and `sendPasswordResetEmail(user)` are immediately clear at the call site.',
+      example: '`render(button, true)` — is `true` making it active? Disabled? Visible? Hidden? You have to go find the definition. `renderActiveButton(button)` answers the question at the call site. The goal: make code readable without needing to look up definitions.',
+    },
+    {
+      title: 'Stack Overflow — Literally',
+      body: 'A stack overflow occurs when a program runs out of call stack space — almost always from infinite or very deep recursion.',
+      detail: 'Every function call pushes a frame onto the call stack (local variables, return address). The stack has a fixed maximum size (typically 1-8 MB). Infinite recursion overflows it before the base case is ever reached.',
+      example: 'Call `factorial(1000000)` with a naive recursive implementation: it pushes 1,000,000 frames onto the stack before it can start returning. The stack fills up and the program crashes with "stack overflow." The website StackOverflow.com is named after this error — the most common beginner crash.',
+    },
+    {
+      title: 'How Binary Numbers Work',
+      body: 'Computers use only 0 and 1 because transistors have two states: on and off. Each "bit" is one binary digit. 8 bits = 1 byte = 256 possible values.',
+      detail: 'Binary is base-2: each position represents a power of 2. The rightmost bit = 2⁰ = 1, next = 2¹ = 2, then 4, 8, 16, 32, 64, 128. An 8-bit byte can represent 0 (00000000) through 255 (11111111).',
+      example: 'The number 42 in binary: 32+8+2 = 42 → 00101010. Every color on your screen is stored as 3 bytes (red, green, blue), each 0-255. White = 255,255,255. Black = 0,0,0. The emoji 🎵 is stored as a sequence of bytes. Everything digital is these two digits, stacked.',
+    },
+    {
+      title: 'Premature Optimization',
+      body: '"Premature optimization is the root of all evil." — Donald Knuth',
+      detail: 'Write code that works and is clear first. Measure where it\'s actually slow (with a profiler). Then optimize only that. Most code you\'re certain is a bottleneck isn\'t — and the places you didn\'t suspect are.',
+      example: 'A developer spends 3 days micro-optimizing a database query that runs once at startup. Meanwhile, a loop that fires 1,000 times per page load with an N+1 query slows the app to 4 seconds. The profiler would have shown the real problem immediately. Measure first, always.',
+    },
+    {
+      title: 'What an API Actually Is',
+      body: 'An API (Application Programming Interface) is a contract: "send me this shape of data, and I\'ll send you back this shape of data." It hides complexity behind a defined interface.',
+      detail: 'APIs exist at every level: the function signatures in a library, HTTP endpoints on a server, the buttons on a TV remote. The value is that the consumer doesn\'t need to know the implementation — only the contract.',
+      example: 'When your weather app shows the forecast, it doesn\'t run weather models — it calls a weather API: "Give me the forecast for ZIP 90210." The API returns JSON. The app displays it. The app has no idea how the forecast was calculated. That\'s the point of an API.',
+    },
+    {
+      title: 'The Halting Problem',
+      body: 'It is mathematically impossible to write a program that can determine, for any arbitrary program, whether it will finish running or loop forever.',
+      detail: 'Proved by Alan Turing in 1936 via proof by contradiction. If such a program existed, you could construct a paradox: a program that loops forever if the halting-checker says it halts, and vice versa.',
+      example: 'This is why your code editor can\'t warn you about all infinite loops — it can catch obvious ones, but the general problem is provably unsolvable. Some bugs cannot be detected by any automated tool, ever, in principle. Turing proved there are limits to what computation can know about itself.',
+    },
+    {
+      title: 'Functions Should Do One Thing',
+      body: 'A function should do one thing, do it well, and do it only. If you need "and" to describe what it does, it should be two functions.',
+      detail: 'Single responsibility makes functions testable (test one behavior), readable (clear name maps to one action), and reusable (composable with other single-purpose functions).',
+      example: '`validateAndSaveUser(user)` is two functions: `validateUser(user)` and `saveUser(user)`. Now you can validate without saving, save without validating, test each independently, and name them clearly. The split cost you 1 minute; the clarity saves hours over the life of the code.',
+    },
+    {
+      title: 'Null: The Billion Dollar Mistake',
+      body: '"I call it my billion-dollar mistake." — Tony Hoare, inventor of null (1965)',
+      detail: 'Null represents the absence of a value, but most languages let you call methods on null, causing a NullPointerException — one of the most common runtime crashes in software history. Modern languages (Rust, Swift, Kotlin) use Option/Maybe types instead.',
+      example: 'You fetch a user from a database: it returns null (user not found). Then you call `user.getName()` without checking. Crash. Every null return is a hidden contract: "check me before using me." Forget once and the whole program crashes. Hoare estimates it caused over a billion dollars in bugs.',
+    },
+    {
+      title: 'Version Control Is Time Travel',
+      body: 'Git and other version control systems let you see every change ever made to code, who made it, why, and roll back to any previous state.',
+      detail: 'Without version control, a deleted function is gone forever. With it, `git log` shows the complete history; `git blame` shows who changed each line and when; `git revert` undoes a specific commit. It\'s an undo button for an entire codebase across a team.',
+      example: 'Production breaks at 2 AM. With git: `git log` finds the last deploy commit, `git diff` shows exactly what changed, `git revert` rolls it back in 60 seconds. Without git: you\'re reading through dozens of changed files trying to remember what you did last week. Version control is not optional.',
+    },
+    {
+      title: 'The = vs == vs === Confusion',
+      body: '= assigns a value. == checks equality (loosely). === checks equality AND type (strictly). Using == in JavaScript causes notorious bugs.',
+      detail: 'In JavaScript, `0 == false` is true (coercion), but `0 === false` is false (different types). `"" == false` is true. `null == undefined` is true. These surprises bite every developer who uses == carelessly.',
+      example: 'JS: `if (userId == "1")` — this is true whether userId is the number 1 or the string "1". `if (userId === "1")` — only true if it\'s the string "1". If your backend sends a number and the comparison expects a string, == quietly passes; === correctly fails. Use === always.',
+    },
+    {
+      title: 'Comments Explain WHY, Not WHAT',
+      body: 'Good code is self-explanatory about what it does. Comments should explain the non-obvious: a hidden constraint, a workaround, a surprising decision.',
+      detail: 'The worst comments restate what the code already says (`// increment i by 1`). The best comments explain what the code can\'t say: why a seemingly simple approach was rejected, what external constraint dictated this design.',
+      example: '// Get the user — useless comment, the code says that.\n// Retry up to 3 times: the payment API returns 500 on first call intermittently (vendor bug, ticket #4421) — useful comment. Six months later someone reads it, understands the context, and doesn\'t remove the retry thinking it\'s unnecessary.',
+    },
+    {
+      title: 'Loops: For vs While',
+      body: 'Use `for` when you know how many iterations you need. Use `while` when you\'re waiting for a condition to change.',
+      detail: 'A `for` loop is syntactic sugar for a `while` loop with a counter. The choice is about readability and intent: `for` signals "I\'m iterating over something finite"; `while` signals "I\'m waiting for something to happen."',
+      example: '`for item in shoppingCart` — clear: processing each item exactly once. `while paymentPending` — clear: keep checking until payment resolves. If you use while with a counter: while(i < 10) { i++; } — that\'s a disguised for loop. Use the right tool to signal intent.',
+    },
+    {
+      title: 'What a Pointer Is',
+      body: 'A pointer is a variable that stores a memory address rather than a value — it "points to" where the actual data lives.',
+      detail: 'In languages like C and C++, pointers give direct memory access and enable efficient data structures. In higher-level languages (Python, JS), references work similarly but the language manages memory for you.',
+      example: 'Rather than copying a 50 MB image into a function, you pass a pointer: "the image is at memory address 0x7ff8a2b0." The function reads from that address. One 8-byte pointer, not 50 MB of data. This is why passing objects by reference is faster than by value — you\'re sharing the address, not the object.',
+    },
+    {
+      title: 'The Power of the Command Line',
+      body: 'The terminal lets you automate, compose, and repeat operations at a speed and precision that GUIs can\'t match. One command can do what 100 clicks would.',
+      detail: 'The Unix philosophy: small tools that do one thing well, composable via pipes. `cat file.txt | grep "error" | sort | uniq -c` reads a file, finds error lines, sorts them, and counts unique ones — in one line.',
+      example: 'Rename 1,000 image files from `photo_001.jpg` to `2024-01-001.jpg` format: one terminal command handles all 1,000 at once. In a GUI file manager: click, rename, click, rename — 2,000 clicks. The terminal turns repetitive tasks into one expression.',
+    },
+    {
+      title: 'Test First, Then Code',
+      body: 'Test-Driven Development (TDD): write a failing test describing what the code should do, then write the minimum code to make it pass.',
+      detail: 'The cycle is Red → Green → Refactor. Tests written after the fact often test what the code does rather than what it should do. Tests written first force you to define success before you build.',
+      example: 'Write: `test("discount applies to orders over $100")`. Run it — it fails (no discount function exists). Write the discount function. Run the test — it passes. Now refactor safely knowing the behavior is locked in. The test is a contract that prevents future changes from breaking the feature.',
+    },
+  ],
+
+  music: [
+    {
+      title: 'Why an Octave Sounds "the Same"',
+      body: 'An octave up doubles the frequency. Middle A is 440 Hz; the A above it is 880 Hz. Our brains perceive these as the "same note" because of how harmonics overlap.',
+      detail: 'The overtone series means every note contains multiples of its fundamental frequency. An octave (2×) aligns its overtones perfectly with the lower note — the two tones blend so naturally the brain treats them as equivalent.',
+      example: 'Sing "Happy Birthday" then sing it again starting one octave higher. It\'s clearly higher — but clearly the same melody. A man and woman singing together often naturally sing an octave apart and it sounds like unison. The doubling frequency is the reason they blend instead of clash.',
+    },
+    {
+      title: 'The Circle of Fifths',
+      body: 'The circle of fifths arranges all 12 musical keys so that neighboring keys share the most notes in common — making chord progressions and key changes predictable.',
+      detail: 'Moving one step clockwise adds one sharp; one step counter-clockwise adds one flat. Adjacent keys differ by only one note, which is why songs frequently modulate (change key) to their neighbors.',
+      example: 'The chord progression C → G → Am → F (I-V-vi-IV) powers hundreds of pop songs — "Let It Be," "No Woman No Cry," "Someone Like You." These four chords are all neighbors on the circle of fifths, sharing many notes, which is why they sound smooth together.',
+    },
+    {
+      title: 'Why Minor Keys Sound "Sad"',
+      body: 'Minor keys use a flattened third note, which creates intervals that our culture associates with sadness — though this is partly learned, not purely physical.',
+      detail: 'Studies with isolated cultures confirm the sad-minor association exists beyond just Western conditioning, suggesting there may be acoustic reasons: minor chords have slightly more dissonant overtone clashes than major chords.',
+      example: 'Play C-E-G (C major chord): sounds bright, resolved. Play C-E♭-G (C minor chord): sounds darker, yearning. Lower just one note by a half step and the emotional character changes dramatically. Composers use this to signal mood before a single lyric is sung.',
+    },
+    {
+      title: 'How Chords Are Built',
+      body: 'A chord is built by stacking thirds. A major triad: root, skip one note, skip one note = root + major third + perfect fifth.',
+      detail: 'The interval pattern determines the chord quality. Major third + minor third = major chord (happy). Minor third + major third = minor chord (sad). Two minor thirds = diminished (tense). Major third + major third = augmented (unsettling).',
+      example: 'C major chord: C (root), E (skip D), G (skip F). Three notes, two skips. That\'s it. Now build D minor: D, F, A. Same skip pattern with different spacing. Every chord in every song is just stacked thirds — a simple rule generating enormous variety.',
+    },
+    {
+      title: 'The Pentatonic Scale Works Everywhere',
+      body: 'The pentatonic scale (5 notes) appears independently in nearly every musical culture on Earth — Chinese, African, Celtic, Indigenous American. It\'s the most universal musical structure.',
+      detail: 'The five notes of the pentatonic scale are chosen by their harmonic relationship to the root — each one sits in a naturally consonant frequency ratio. There are no "dissonant" intervals in the scale, which is why anything played on it sounds pleasing.',
+      example: 'The black keys on a piano form a pentatonic scale. Have someone who\'s never played piano improvise using only the black keys. It almost always sounds good — because the scale has no notes that clash. This is why it appears in every culture: it\'s the set of notes that universally "work."',
+    },
+    {
+      title: 'Why We Have 12 Notes',
+      body: 'Our 12-tone equal temperament is a mathematical compromise — no interval is perfectly in tune, but all intervals are equally slightly out of tune, so any key sounds equally good.',
+      detail: 'Pure mathematical frequency ratios (just intonation) only work perfectly in one key. Earlier keyboards could only play well in a few keys. Bach\'s Well-Tempered Clavier demonstrated that equal temperament lets you play in all 12 without retuning.',
+      example: 'Before equal temperament, harpsichords were tuned to sound great in C major and awful in F# major. Composers avoided certain keys. After equal temperament, every key sounds equally good (or equally slightly impure). The compromise unlocked all of western classical and pop music.',
+    },
+    {
+      title: 'Perfect Pitch vs. Relative Pitch',
+      body: 'Perfect pitch: you hear a note and know its name without reference. Relative pitch: you hear intervals and can identify notes relative to each other. Relative pitch is learnable; perfect pitch largely isn\'t.',
+      detail: 'About 1 in 10,000 people have perfect pitch, with higher rates among those with early musical training and tonal language speakers (Mandarin, Cantonese). Most professional musicians operate on relative pitch alone.',
+      example: 'A musician with relative pitch is played a C, then asked to sing a fifth above — they sing G. Asked out of the blue to name a random note, they can\'t. Perfect pitch would allow instant, effortless identification of any note without reference. Most pros don\'t have it and don\'t need it.',
+    },
+    {
+      title: 'How Rhythm Lives in Your Brain',
+      body: 'Your brain synchronizes neural oscillations to rhythmic patterns — called "entrainment." This is why you automatically tap your foot and why rhythm is so physically compelling.',
+      detail: 'Brain regions involved in movement (motor cortex, basal ganglia) activate when you hear a beat — even if you\'re sitting still. Rhythm literally activates your movement system, which is why you feel compelled to move to music.',
+      example: 'You\'re in a waiting room. A rhythmic song starts playing. Without deciding to, your foot starts tapping. Your brain has synchronized its neural firing to the beat and activated motor pathways. This neural entrainment is also why rhythmic music improves athletic performance — your movement sync improves.',
+    },
+    {
+      title: 'Syncopation: The Unexpected Beat',
+      body: 'Syncopation places emphasis on beats or parts of beats that are normally weak, creating rhythmic tension and forward motion.',
+      detail: 'Standard 4/4 time: beats 1 and 3 are strong, 2 and 4 are weak. Syncopation accents the "ands" between beats or emphasizes 2 and 4 instead. This is the defining feature of jazz, funk, reggae, and most pop music.',
+      example: 'Clap on beats 1-2-3-4: boring and march-like. Now clap on the "and" between 1 and 2: 1-AND-2-AND-3-AND-4. That off-beat accent is syncopation — it creates the groove in funk, the lilt in reggae, the swing in jazz. The tension between where you expect the accent and where it lands is what makes music feel alive.',
+    },
+    {
+      title: 'Why Songs Get Stuck in Your Head',
+      body: 'Earworms (involuntary musical imagery) occur when your brain\'s "completion" mechanism loops an unresolved musical phrase, trying to finish it.',
+      detail: 'Songs with simple, repetitive melodic hooks, slight surprises in rhythm or pitch, and incomplete phrase structures are most likely to create earworms. Your auditory cortex keeps "predicting" the next note in the sequence.',
+      example: '"Ba da da da da, I\'m lovin\' it." The McDonald\'s jingle ends on an unresolved upward phrase. Your brain keeps trying to complete it. This is deliberate design — earworm jingles are engineered to trigger this loop. The incomplete musical phrase is the hook your brain can\'t set down.',
+    },
+    {
+      title: 'Melody vs. Harmony',
+      body: 'Melody is the horizontal sequence of notes (the "tune" you hum). Harmony is the vertical layering of notes played simultaneously (chords supporting the tune).',
+      detail: 'Melody and harmony interact: the same melody sounds completely different over major vs. minor chords. Changing the harmony under an unchanged melody can make it sound sad, triumphant, mysterious, or comic.',
+      example: 'Hum "Twinkle Twinkle Little Star." That single-note sequence is the melody. Now imagine it played while a pianist plays dark minor chords underneath — suddenly it sounds eerie. Same melody, different harmony, completely different emotion. Harmony is the emotional context that gives melody its feeling.',
+    },
+    {
+      title: 'The Bass Drives Everything',
+      body: 'Bass frequencies anchor the rhythm, define the chord, and determine whether music feels grounded or unresolved — often more than any other element.',
+      detail: 'The lowest note in a chord defines what chord it is. A C-E-G chord with C in the bass is C major. The same C-E-G with E in the bass becomes a different chord with a different emotional quality. Basslines create the foundation that everything else floats on.',
+      example: 'Listen to any pop song and pay attention only to the bass. You\'ll hear it locking with the kick drum, defining the chord each bar, and often carrying its own melodic line. Mute the bass in a mix and it sounds thin and unresolved. The bass is the invisible structural floor the listener stands on.',
+    },
+    {
+      title: 'Why Live Music Feels Different',
+      body: 'Live music contains acoustic phenomena that recordings can\'t fully capture: room resonance, micro-timing variations, and the visual/social experience of communal listening.',
+      detail: 'Recordings are static; live performances breathe. Slight tempo fluctuations (rubato), spontaneous dynamics, and the unpredictability of a live performance create tension and release that a fixed recording cannot replicate.',
+      example: 'The same song sounds different at a concert than on headphones because: sound bounces off walls and other people (resonance), the performer\'s micro-timing shifts with emotion, and you\'re physically surrounded by others reacting simultaneously. Your brain processes all of this as something recordings can\'t fake.',
+    },
+    {
+      title: 'Modes: Same Notes, Different Feeling',
+      body: 'A mode is the same set of notes as a major scale, but starting from a different note — each mode has a distinct emotional character.',
+      detail: 'The seven modes of the major scale: Ionian (major — bright), Dorian (slightly dark, blues-y), Phrygian (flamenco-like, very dark), Lydian (dreamy, floating), Mixolydian (rock, slightly flat), Aeolian (minor — sad), Locrian (very dissonant, rarely used).',
+      example: 'C major scale played from C: happy (Ionian). Same notes played from D to D (D Dorian): slightly dark, used in "Scarborough Fair" and "So What" by Miles Davis. Same notes played from E to E (E Phrygian): Spanish/flamenco sound. No new notes — just a different starting point creates a completely different mood.',
+    },
+    {
+      title: 'Dynamic Range: Loud and Quiet Together',
+      body: 'Dynamic range is the difference between the softest and loudest passages in music. Classical music uses wide dynamic range deliberately; modern pop has largely compressed it away.',
+      detail: '"The Loudness War" (1990s-2010s): producers compressed recordings to be as loud as possible for radio. This eliminated quiet passages, created listening fatigue, and paradoxically made music feel less impactful. Streaming services now normalize volume levels, reducing the incentive.',
+      example: 'Beethoven\'s 5th Symphony opens with the famous four-note theme played loudly, then drops to almost nothing — then returns loud. The contrast makes the loud moments feel enormous. A pop song at constant maximum loudness feels intense for 30 seconds, then fatiguing. Quiet makes loud mean something.',
+    },
+    {
+      title: 'The History of 440 Hz',
+      body: 'Standard concert pitch (A440) was internationally agreed upon in 1939 — before that, A ranged from 415 Hz to 466 Hz depending on era and location.',
+      detail: 'Baroque instruments were tuned to A415 (a half-step lower). This means playing Baroque music at A440 is actually transposing it slightly up from the composer\'s intent. There\'s an ongoing internet conspiracy that A432 Hz is "more natural" — this has no acoustic basis.',
+      example: 'When an orchestra tunes to A440 before a concert, they\'re following a 1939 international agreement. Before standardization, traveling musicians had to transpose or retune at every new venue because instruments were tuned differently city to city. The standard exists so orchestras can hire musicians from anywhere and play together.',
+    },
+    {
+      title: 'Why Music Gives You Chills',
+      body: 'Musical chills (frisson) are caused by an unexpected melodic turn, a surprising chord, or a soaring passage that triggers the same neural pathway as physical threat detection — releasing dopamine.',
+      detail: 'About 55-86% of people experience frisson. Those who do show more openness to experience and tend to process music more analytically. The "chill" is your brain\'s reward system firing for a correctly predicted musical surprise.',
+      example: 'That moment in a song when the key changes unexpectedly, when the full orchestra enters after a quiet section, or when a singer hits the high note — your skin prickles and hair stands up. Your brain predicted what was coming, was slightly wrong, and rewarded itself for the near-miss with a dopamine spike.',
+    },
+    {
+      title: 'The I-IV-V Chord Progression',
+      body: 'The I-IV-V progression (root, fourth, fifth) is the backbone of blues, rock, folk, and country — three chords that fit together because of their shared notes.',
+      detail: 'In C major: C (I), F (IV), G (V). The V chord (G) creates tension that resolves back to I (C). This tension-release cycle is the engine of most western music. "The Blues" is largely this progression in minor with a flattened seventh.',
+      example: 'Over 1,000 rock songs use I-IV-V: "Johnny B. Goode," "La Bamba," "Twist and Shout," "Wild Thing." Three chords, infinite songs. The reason: these three chords together contain every note of the major scale, so any melody in that key will harmonize with at least one of them.',
+    },
+    {
+      title: 'Counterpoint: Melodies That Argue and Agree',
+      body: 'Counterpoint is the art of combining two or more independent melodies that interact harmonically. Bach mastered it to a degree no composer before or since has matched.',
+      detail: 'Rules of counterpoint govern which intervals can move in parallel, when voices can cross, how dissonances must resolve. Following these rules while writing melodies that are independently interesting is considered the peak technical achievement in western composition.',
+      example: 'Hum the baseline of Bach\'s Crab Canon while a friend hums the treble line — they\'re both complete independent melodies that also form harmonies where they cross. The treble forwards and the bass backwards are both valid melodies. One piece generates two voices that sound intentionally composed in opposite directions simultaneously.',
+    },
+    {
+      title: 'Time Signatures Explained',
+      body: '4/4 means 4 beats per measure, each a quarter note. 3/4 is waltz time (1-2-3, 1-2-3). 5/4 and 7/8 create asymmetric, propulsive rhythms.',
+      detail: 'The top number tells you how many beats per measure; the bottom tells you what note value gets one beat. 6/8 has 6 eighth-note beats, typically grouped as 2 groups of 3 — it swings differently than 3/4 even though both are "three-ish."',
+      example: '"Take Five" by Dave Brubeck is in 5/4: 1-2-3-4-5, 1-2-3-4-5. You can feel the extra beat throwing off the expected pattern. "Money" by Pink Floyd is in 7/4. Most people can\'t count it but they can feel that something is off — the groove resolves one beat later than expected, creating forward momentum.',
+    },
+  ],
+
+  language: [
+    {
+      title: 'Language Shapes What You Can Think',
+      body: 'The Sapir-Whorf hypothesis: the language you speak influences how you perceive and think about the world, not just how you describe it.',
+      detail: 'A strong version (language determines thought) is mostly rejected. A weaker version (language influences cognition in measurable ways) is well supported. Russian speakers have two words for blue (siniy/goluboy) and are faster at distinguishing shades of blue than English speakers.',
+      example: 'The Pirahã people of the Amazon have no words for specific numbers (only "few" and "many") and struggle with tasks requiring exact counting. The Hopi language has no grammatical tense — researchers debate whether Hopi speakers conceptualize time differently as a result. Language is not just description; it\'s infrastructure for thought.',
+    },
+    {
+      title: 'Spaced Repetition: The Science of Not Forgetting',
+      body: 'Reviewing information at increasing intervals (1 day, 3 days, 1 week, 2 weeks...) is the most efficient way to move vocabulary from short-term to long-term memory.',
+      detail: 'The Ebbinghaus Forgetting Curve shows memory decays exponentially without review. Each review at the moment you\'re about to forget "resets" the decay curve at a higher baseline. Apps like Anki and Duolingo are built on this research.',
+      example: 'You learn the Spanish word "mariposa" (butterfly) today. Without review: forgotten in 2 days. With spaced repetition: review tomorrow, then in 3 days, then 1 week, then 2 weeks. Each review is harder (you\'re doing it right when you\'re about to forget), which is exactly why it works — the effort of retrieval strengthens the memory.',
+    },
+    {
+      title: 'Cognates: Free Words Across Languages',
+      body: 'Cognates are words in different languages that share a common origin and look/sound similar with the same meaning. They\'re the fastest vocabulary wins for related languages.',
+      detail: 'English and Spanish share thousands of Latin-root cognates: information/información, natural/natural, possible/posible. English and German share Germanic cognates: water/Wasser, hand/Hand, book/Buch.',
+      example: 'If you speak English and start learning Spanish, you already know hundreds of words for free: nation, action, emotion, tradition, information — all end in "-tion" in English and "-ción" in Spanish with identical meaning. You have a 1,000-word head start before your first lesson.',
+    },
+    {
+      title: 'False Friends Will Embarrass You',
+      body: 'False friends are words that look similar in two languages but mean different things. They\'re among the most common causes of awkward language mistakes.',
+      detail: 'Spanish "embarazada" means pregnant, not embarrassed. "Sensible" in French means sensitive, not sensible. German "Gift" means poison, not gift. These trap even advanced learners who let similarity override their memory of the correct meaning.',
+      example: 'An English speaker in Spain, intending to say they\'re embarrassed, says "Estoy embarazada." They\'ve just told a stranger they\'re pregnant. The similar-looking word short-circuits the correct answer. Every language has dozens of these traps — learning them is part of the curriculum.',
+    },
+    {
+      title: 'The Critical Period for Language',
+      body: 'Children acquire their first language effortlessly and without instruction. After puberty, the brain loses this plasticity — second languages are learned differently, through explicit study.',
+      detail: 'Children can distinguish all human sounds at birth but prune to their native language\'s phonemes by age 1. Adults can\'t hear sounds their native language doesn\'t use without training. This is why adults always have an accent and children who move countries don\'t.',
+      example: 'Move a 5-year-old to Japan — within a year, perfect Japanese, no accent. Move a 35-year-old — years of study, permanent accent. The difference: children\'s brains are pattern-matching machines that absorb input directly. Adults route everything through explicit learning systems that weren\'t built for this.',
+    },
+    {
+      title: 'You Only Need 1,000 Words',
+      body: 'The 1,000 most common words in any language account for approximately 85% of all spoken speech. The 3,000 most common cover 95%.',
+      detail: 'Frequency-based vocabulary learning gives enormous early returns. The first 100 words (pronouns, articles, common verbs) appear in 50% of all text. Each additional word provides diminishing returns, but the first 1,000 get you surprisingly far.',
+      example: 'The word "the" alone accounts for ~7% of all English text. The top 10 words (the, be, to, of, and, a, in, that, have, it) cover 25% of everything written. Learn the top 1,000 Spanish words by frequency and you can understand most of a conversation — with gaps, but understandably.',
+    },
+    {
+      title: 'Comprehensible Input Is How You Actually Learn',
+      body: 'Stephen Krashen\'s input hypothesis: you acquire language by understanding messages that are slightly beyond your current level (i+1) — not by studying grammar rules.',
+      detail: 'Grammar study creates explicit knowledge that\'s slow to access. Input builds implicit competence that runs automatically. Fluent speakers don\'t recall rules while speaking — they just know what sounds right, built from thousands of hours of comprehensible input.',
+      example: 'Reading a children\'s book in your target language is more effective than studying a grammar textbook, because you\'re absorbing the patterns in context — the way they actually appear. Studying "the imperfect past tense conjugation" teaches you to pass a test; reading stories that use it teaches you to use it.',
+    },
+    {
+      title: 'Code-Switching is Fluency, Not Confusion',
+      body: 'Switching between languages mid-conversation (code-switching) is a sign of linguistic mastery, not a lack of proficiency in either language.',
+      detail: 'Bilinguals code-switch strategically: to express something more precisely, to signal group identity, or because a word in one language is more efficient. It requires knowing both languages well enough to know when to switch.',
+      example: 'A Spanish-English bilingual might say "Vamos al store" not because they forgot the Spanish word (tienda) but because "store" is faster in context, or because the group understands both languages. Research shows this requires maintaining two complete grammar systems simultaneously — cognitively demanding, not a shortcut.',
+    },
+    {
+      title: 'All Languages Have Nouns and Verbs',
+      body: 'Despite enormous diversity, every known human language — all 7,000+ — has nouns (names for things) and verbs (words for actions). Nothing else is universal.',
+      detail: 'No human language lacks these two categories. This suggests nouns and verbs are built into human cognitive architecture, not cultural convention. Everything else — adjectives, adverbs, prepositions, tenses — varies or is absent in some languages.',
+      example: 'Some languages have no adjectives (using verbs like "it reds" instead of "it is red"). Some have no grammatical tense. Some use no pronouns. Some merge subject and verb into one word. But nouns and verbs: every language, everywhere, always. They map to something fundamental in how human minds categorize experience.',
+    },
+    {
+      title: 'Tonal Languages: Pitch Carries Meaning',
+      body: 'In tonal languages (Mandarin, Cantonese, Vietnamese), the pitch contour of a syllable determines its meaning. Mandarin has 4 tones; Cantonese has 6-9.',
+      detail: 'In Mandarin, "ma" can mean mother (flat tone), hemp (rising), horse (dipping), or scold (falling) depending on the pitch. Tone errors don\'t just affect accent — they change the word entirely.',
+      example: 'The classic Mandarin example: "Wǒ xiǎng wèn nǐ" (I want to ask you) vs. "Wǒ xiǎng wěn nǐ" (I want to kiss you). One tone difference. English speakers initially can\'t hear the distinction. After training, the same neural pathways that process musical pitch take over — which is why musical training helps.',
+    },
+    {
+      title: 'Proto-Indo-European: The Ancestor Language',
+      body: 'Most European and many Asian languages descend from a single language spoken ~4500 BCE: Proto-Indo-European (PIE). It was never written down but has been reconstructed from its descendants.',
+      detail: 'Linguists reconstruct PIE by comparing cognates across languages. "Father": English, German Vater, Latin pater, Sanskrit pitā, Greek patēr — all from PIE *ph₂tḗr. Over 3 billion people speak PIE-descended languages today.',
+      example: 'The word for "dog" in PIE was *ḱwṓ. English: hound (archaic), Latin: canis, Greek: kyon, Sanskrit: śvan. Different, but the pattern of sound changes is systematic and predictable — like comparing letters in words where each language consistently changes "k" to "h." Linguists can read the family resemblance.',
+    },
+    {
+      title: 'Output Accelerates Learning',
+      body: 'Speaking and writing in your target language — even badly — forces your brain to notice gaps in your knowledge that passive listening never reveals.',
+      detail: 'Merrill Swain\'s output hypothesis: comprehensible input alone isn\'t enough. When you produce language, you discover what you don\'t know — which creates a specific need that you then seek input to fill.',
+      example: 'You\'ve listened to Spanish podcasts for 6 months and understand most of it. You try to say "I haven\'t been to the beach in years." You freeze — you don\'t know how to express "haven\'t been to" in Spanish. That specific gap is now visible, memorable, and learnable. Output reveals what input hid.',
+    },
+    {
+      title: 'Loanwords: Languages Borrow Freely',
+      body: 'Languages constantly borrow words from other languages. English is estimated to be 60-70% French and Latin vocabulary by word count, while being Germanic in structure.',
+      detail: 'English borrowed from French (government, justice, art), Latin (science, medicine), Norse (sky, egg, window), Arabic (algebra, alcohol, coffee), Hindi (jungle, shampoo, bungalow), and many more. This is normal — all living languages borrow.',
+      example: '"Cafe" is French, "algebra" is Arabic, "jungle" is Hindi, "robot" is Czech, "karaoke" is Japanese. A sentence like "I drank coffee in the jungle cafe doing algebra" borrows from four different language families. English is a linguistic magpie — it takes words from everywhere and slightly mispronounces them.',
+    },
+    {
+      title: 'Language Loss: Half Will Be Gone',
+      body: 'Of the ~7,000 languages currently spoken, approximately half will be extinct by 2100. Most are lost when the last fluent speaker dies.',
+      detail: 'When a language dies, its associated knowledge — unique ways of categorizing plants, ecological knowledge, mathematical systems, cultural concepts — disappears with it. No translation preserves it; some concepts have no equivalent in other languages.',
+      example: 'The Seri language of Mexico has a single word for "the process of picking up a small object from the water." No English translation captures that in one word. When the last Seri speaker dies without having taught it, that word — and the way of seeing that experience it encodes — is gone. Permanently. Languages take unique views of the world with them.',
+    },
+    {
+      title: 'The Silent Period Is Normal',
+      body: 'Most language learners go through a "silent period" where they can understand far more than they can produce. This is normal and necessary — don\'t force output too early.',
+      detail: 'Children go through a year or more of comprehension before speaking. Adult learners often skip this due to social pressure, leading to fossilized errors from forcing output before sufficient input. The silent period builds the internal model that makes output accurate.',
+      example: 'A child moved to a new country at age 6 may say almost nothing in the new language for 6-9 months while their classmates assume they can\'t learn. Then, seemingly suddenly, they start speaking — fluently and accurately. The months of silence were the learning. Premature speaking often cements errors.',
+    },
+    {
+      title: 'Writing Systems: Different Solutions to the Same Problem',
+      body: 'Alphabets (English), syllabaries (Japanese kana), and logographs (Chinese characters) are fundamentally different approaches to mapping sound or meaning to symbols.',
+      detail: 'Alphabets: one symbol ≈ one sound. Syllabaries: one symbol = one syllable. Logographs: one symbol = one word or morpheme. Each has tradeoffs: alphabets are compact but ambiguous; logographs require thousands of symbols but convey meaning without knowing pronunciation.',
+      example: 'Reading "Tokyo" in English tells you how to say it, nothing else. Reading 東京 in Chinese characters tells you: Eastern (東) Capital (京) — even if you can\'t say the characters. The symbol carries meaning. Japanese uses three writing systems simultaneously: kanji (logographs), hiragana (syllabary), and katakana (another syllabary) in the same sentence.',
+    },
+    {
+      title: 'Immersion Doesn\'t Work Without Comprehension',
+      body: 'Simply surrounding yourself with a language you don\'t understand provides little benefit. The input must be comprehensible — you need to understand most of it to acquire from it.',
+      detail: 'Living in a foreign country doesn\'t automatically produce fluency. Immigrants who socialize primarily with native-language communities can live for decades without learning the local language. Comprehensible input — not mere exposure — is the mechanism.',
+      example: 'Turning on Japanese TV 24/7 when you know zero Japanese produces: anxiety and no learning. Watching children\'s shows with strong visual context and simple vocabulary, then shows one level up — produces acquisition. The same hours of "immersion," but only comprehensible input actually teaches.',
+    },
+    {
+      title: 'Every Language Has Rules Its Speakers Don\'t Know',
+      body: 'Native speakers follow complex grammatical rules perfectly — without ever being taught or consciously knowing them. These tacit rules are called "implicit grammar."',
+      detail: 'English adjective order is a famous example: we say "big red dog" not "red big dog," "new black car" not "black new car." No English speaker is taught this rule — yet all follow it perfectly. The rule (size before color before origin) is completely unconscious.',
+      example: 'The English adjective order rule: opinion, size, age, shape, color, origin, material, purpose + noun. "Lovely little old rectangular green French silver whittling knife" — every English speaker instinctively knows this is right. But nobody could tell you the rule. You have thousands of these rules you follow unconsciously.',
+    },
+    {
+      title: 'Accents Are Impossible to Fully Eliminate After Puberty',
+      body: 'After puberty, the brain\'s phonological system is largely set. Non-native sounds are processed through native-language filters, making a native accent nearly unachievable for adult learners.',
+      detail: 'Children learn phonemes by tuning to the specific sounds of their language. After the critical period, sounds that don\'t exist in the native language are perceived and produced using the closest native approximation — creating the accent.',
+      example: 'Japanese has no L/R distinction — both sounds map to one phoneme. Adult Japanese learners of English genuinely cannot hear the difference between "light" and "right" without training, because their auditory cortex was never wired to notice it. Extensive training can improve this, but the filtering mechanism set in childhood never fully disappears.',
+    },
+    {
+      title: 'Intercomprehension: Reading a Language You Never Learned',
+      body: 'Speakers of one Romance language (Spanish, Italian, French, Portuguese) can often read another they\'ve never studied — because the shared Latin root makes much vocabulary recognizable.',
+      detail: 'This works better in writing than speech, because shared vocabulary is clearer when you can see the letters than when pronunciation changes. Italian and Spanish share ~82% core vocabulary; French shares about 75% with Spanish.',
+      example: 'An Italian speaker shown a page of Spanish: "hermano" (brother) — similar to Italian "fratello," no. But "biblioteca" (library) — same as Italian. "Está" — same root as Italian "è". With context and cognate recognition, Italian speakers can read Spanish newspapers at 60-70% comprehension with zero study. The shared ancestor makes the work free.',
     },
   ],
 };

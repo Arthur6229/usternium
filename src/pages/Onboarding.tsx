@@ -32,11 +32,12 @@ function Input({ label, value, onChange, type = 'text', error, placeholder }: {
 
 export function Onboarding() {
   const navigate = useNavigate();
-  const { saveProfile } = useStore();
-  const [step, setStep] = useState<1 | 2>(1);
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [selected, setSelected] = useState<Set<TopicId>>(new Set());
+  const { saveProfile, profile } = useStore();
+  const editing = !!profile;
+  const [step, setStep] = useState<1 | 2>(editing ? 2 : 1);
+  const [name, setName] = useState(profile?.name ?? '');
+  const [email, setEmail] = useState(profile?.email ?? '');
+  const [selected, setSelected] = useState<Set<TopicId>>(new Set(profile?.topics ?? []));
   const [nameErr, setNameErr] = useState('');
   const [emailErr, setEmailErr] = useState('');
 
@@ -111,7 +112,9 @@ export function Onboarding() {
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-            <div style={{ fontSize: 28, fontWeight: 800, color: '#f1f5f9', letterSpacing: '-0.03em', marginBottom: 8 }}>Pick your topics</div>
+            <div style={{ fontSize: 28, fontWeight: 800, color: '#f1f5f9', letterSpacing: '-0.03em', marginBottom: 8 }}>
+              {editing ? 'Edit your topics' : 'Pick your topics'}
+            </div>
             <div style={{ fontSize: 15, color: '#64748b', marginBottom: 28, lineHeight: 1.6 }}>
               Choose as many as you like. You'll get one insight per topic, per day.
             </div>
@@ -154,15 +157,17 @@ export function Onboarding() {
             )}
 
             <div style={{ display: 'flex', gap: 12 }}>
-              <button
-                onClick={() => setStep(1)}
-                style={{
-                  flex: 0, padding: '15px 20px', borderRadius: 14, border: '1px solid rgba(255,255,255,0.1)',
-                  background: 'transparent', color: '#64748b', fontWeight: 700, fontSize: 15, cursor: 'pointer',
-                }}
-              >
-                ←
-              </button>
+              {!editing && (
+                <button
+                  onClick={() => setStep(1)}
+                  style={{
+                    flex: 0, padding: '15px 20px', borderRadius: 14, border: '1px solid rgba(255,255,255,0.1)',
+                    background: 'transparent', color: '#64748b', fontWeight: 700, fontSize: 15, cursor: 'pointer',
+                  }}
+                >
+                  ←
+                </button>
+              )}
               <button
                 onClick={finish}
                 disabled={selected.size === 0}
@@ -175,7 +180,7 @@ export function Onboarding() {
                   boxShadow: selected.size > 0 ? '0 0 30px rgba(99,102,241,0.35)' : 'none',
                 }}
               >
-                Start learning <ArrowRight size={18} />
+                {editing ? 'Save changes' : 'Start learning'} <ArrowRight size={18} />
               </button>
             </div>
           </div>

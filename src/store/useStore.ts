@@ -30,7 +30,11 @@ export const useStore = create<AppState>()(
       learnedToday: [],
       totalLearned: 0,
 
-      saveProfile: (profile) => set({ profile }),
+      saveProfile: (profile) => set((s) => ({
+        profile,
+        // preserve learned progress when only topics change
+        learnedToday: s.learnedToday.filter(t => profile.topics.includes(t)),
+      })),
 
       markLearned: (topicId) =>
         set((s) => {
