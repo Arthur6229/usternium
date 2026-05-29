@@ -5,6 +5,31 @@ import { topics } from '../data/content';
 import type { TopicId } from '../data/content';
 import { ArrowRight, Check } from 'lucide-react';
 
+function Input({ label, value, onChange, type = 'text', error, placeholder }: {
+  label: string; value: string; onChange: (v: string) => void; type?: string; error: string; placeholder: string;
+}) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <label style={{ fontSize: 13, fontWeight: 600, color: '#94a3b8' }}>{label}</label>
+      <input
+        type={type}
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder={placeholder}
+        style={{
+          padding: '14px 16px', borderRadius: 12, fontSize: 16, outline: 'none',
+          background: 'rgba(255,255,255,0.05)',
+          border: `1.5px solid ${error ? '#ef4444' : 'rgba(255,255,255,0.12)'}`,
+          color: '#f1f5f9', transition: 'border-color 0.2s',
+        }}
+        onFocus={e => { (e.target as HTMLInputElement).style.borderColor = '#6366f1'; }}
+        onBlur={e => { (e.target as HTMLInputElement).style.borderColor = error ? '#ef4444' : 'rgba(255,255,255,0.12)'; }}
+      />
+      {error && <div style={{ fontSize: 12, color: '#ef4444' }}>{error}</div>}
+    </div>
+  );
+}
+
 export function Onboarding() {
   const navigate = useNavigate();
   const { saveProfile } = useStore();
@@ -36,29 +61,6 @@ export function Onboarding() {
     saveProfile({ name: name.trim(), email: email.trim(), topics: [...selected] });
     navigate('/dashboard');
   };
-
-  const Input = ({ label, value, onChange, type = 'text', error, placeholder }: {
-    label: string; value: string; onChange: (v: string) => void; type?: string; error: string; placeholder: string;
-  }) => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-      <label style={{ fontSize: 13, fontWeight: 600, color: '#94a3b8' }}>{label}</label>
-      <input
-        type={type}
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        placeholder={placeholder}
-        style={{
-          padding: '14px 16px', borderRadius: 12, fontSize: 16, outline: 'none',
-          background: 'rgba(255,255,255,0.05)',
-          border: `1.5px solid ${error ? '#ef4444' : 'rgba(255,255,255,0.12)'}`,
-          color: '#f1f5f9', transition: 'border-color 0.2s',
-        }}
-        onFocus={e => { (e.target as HTMLInputElement).style.borderColor = '#6366f1'; }}
-        onBlur={e => { (e.target as HTMLInputElement).style.borderColor = error ? '#ef4444' : 'rgba(255,255,255,0.12)'; }}
-      />
-      {error && <div style={{ fontSize: 12, color: '#ef4444' }}>{error}</div>}
-    </div>
-  );
 
   return (
     <div style={{
