@@ -69,7 +69,7 @@ function TopicCard({ topicId, learned, onLearn }: { topicId: TopicId; learned: b
                 borderRadius: 12, padding: '14px 16px', marginBottom: item.example ? 12 : 16,
               }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: topic.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>
-                  📖 Going deeper
+                  📖 Why it works
                 </div>
                 <p style={{ fontSize: 14, color: '#94a3b8', lineHeight: 1.7, margin: 0 }}>{item.detail}</p>
               </div>
