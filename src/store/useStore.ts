@@ -12,13 +12,16 @@ interface AppState {
   profile: UserProfile | null;
   streak: number;
   lastVisit: string | null;
-  learnedToday: TopicId[];
+  // date-stamped: topicId → ISO date it was last marked learned
+  learnedDates: Partial<Record<TopicId, string>>;
   totalLearned: number;
 
   saveProfile: (p: UserProfile) => void;
   markLearned: (topicId: TopicId) => void;
   checkStreak: () => void;
   reset: () => void;
+  // derived helper – returns which topics were learned on a given date
+  learnedOn: (date: string) => TopicId[];
 }
 
 export const useStore = create<AppState>()(
@@ -27,21 +30,18 @@ export const useStore = create<AppState>()(
       profile: null,
       streak: 0,
       lastVisit: null,
-      learnedToday: [],
+      learnedDates: {},
       totalLearned: 0,
 
-      saveProfile: (profile) => set((s) => ({
-        profile,
-        // preserve learned progress when only topics change
-        learnedToday: s.learnedToday.filter(t => profile.topics.includes(t)),
-      })),
+      saveProfile: (profile) => set({ profile }),
 
       markLearned: (topicId) =>
         set((s) => {
-          const already = s.learnedToday.includes(topicId);
+          const today = new Date().toISOString().split('T')[0];
+          const alreadyToday = s.learnedDates[topicId] === today;
           return {
-            learnedToday: already ? s.learnedToday : [...s.learnedToday, topicId],
-            totalLearned: already ? s.totalLearned : s.totalLearned + 1,
+            learnedDates: { ...s.learnedDates, [topicId]: today },
+            totalLearned: alreadyToday ? s.totalLearned : s.totalLearned + 1,
           };
         }),
 
@@ -52,10 +52,18 @@ export const useStore = create<AppState>()(
 
         const yesterday = new Date(Date.now() - 86_400_000).toISOString().split('T')[0];
         const newStreak = lastVisit === yesterday ? streak + 1 : 1;
-        set({ lastVisit: today, streak: newStreak, learnedToday: [] });
+        set({ lastVisit: today, streak: newStreak });
       },
 
-      reset: () => set({ profile: null, streak: 0, lastVisit: null, learnedToday: [], totalLearned: 0 }),
+      learnedOn: (date: string) => {
+        const { learnedDates } = get();
+        return (Object.keys(learnedDates) as TopicId[]).filter(
+          (t) => learnedDates[t] === date,
+        );
+      },
+
+      reset: () =>
+        set({ profile: null, streak: 0, lastVisit: null, learnedDates: {}, totalLearned: 0 }),
     }),
     { name: 'usternium-store' }
   )

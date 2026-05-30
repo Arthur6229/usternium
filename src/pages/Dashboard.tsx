@@ -119,8 +119,9 @@ function TopicCard({ topicId, learned, onLearn }: { topicId: TopicId; learned: b
 
 export function Dashboard() {
   const navigate = useNavigate();
-  const { profile, streak, learnedToday, totalLearned, markLearned, checkStreak, reset } = useStore();
+  const { profile, streak, learnedDates, totalLearned, markLearned, checkStreak, reset } = useStore();
   const [showSettings, setShowSettings] = useState(false);
+  const todayKey = new Date().toISOString().split('T')[0];
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
   useEffect(() => {
@@ -130,8 +131,9 @@ export function Dashboard() {
 
   if (!profile) return null;
 
-  const allLearnedToday = profile.topics.every(t => learnedToday.includes(t));
-  const learnedCount = profile.topics.filter(t => learnedToday.includes(t)).length;
+  const learnedToday = profile.topics.filter(t => learnedDates[t] === todayKey);
+  const allLearnedToday = profile.topics.every(t => learnedDates[t] === todayKey);
+  const learnedCount = learnedToday.length;
 
   return (
     <div style={{ minHeight: '100vh', background: '#030712', color: '#f1f5f9' }}>
@@ -264,7 +266,7 @@ export function Dashboard() {
             <TopicCard
               key={topicId}
               topicId={topicId}
-              learned={learnedToday.includes(topicId)}
+              learned={learnedDates[topicId] === todayKey}
               onLearn={() => markLearned(topicId)}
             />
           ))}
