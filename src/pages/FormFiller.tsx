@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect, ReactNode } from 'react';
-import { Bot, Send, X, ArrowLeft, Copy, Check, Trash2 } from 'lucide-react';
+import { useState, useRef, useEffect, ReactNode, useCallback } from 'react';
+import { Bot, Send, X, ArrowLeft, Copy, Check, Trash2, Mic, MicOff } from 'lucide-react';
 
 interface FormField {
   id: string;
@@ -187,6 +187,57 @@ function runCommand(
   return `I can help fill your form! Examples:\n• "Fill signature with J.Doe"\n• "Set date to 2024-01-15"\n• "Show fields" — list everything`;
 }
 
+// ─── Speech hook ─────────────────────────────────────────────────────────────
+
+type SpeechState = 'idle' | 'listening' | 'unsupported';
+
+interface ISpeechRecognition {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onresult: ((e: { results: { [i: number]: { [i: number]: { transcript: string } } } }) => void) | null;
+  onerror: (() => void) | null;
+  onend: (() => void) | null;
+  start(): void;
+  stop(): void;
+}
+type SpeechRecognitionCtor = new () => ISpeechRecognition;
+
+function useSpeech(onResult: (text: string) => void) {
+  const [state, setState] = useState<SpeechState>(() =>
+    typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)
+      ? 'idle'
+      : 'unsupported'
+  );
+  const recogRef = useRef<ISpeechRecognition | null>(null);
+
+  const start = useCallback(() => {
+    if (state === 'unsupported') return;
+    const w = window as unknown as { SpeechRecognition?: SpeechRecognitionCtor; webkitSpeechRecognition?: SpeechRecognitionCtor };
+    const SR = w.SpeechRecognition ?? w.webkitSpeechRecognition!;
+    const r = new SR();
+    r.continuous = false;
+    r.interimResults = false;
+    r.lang = 'en-US';
+    r.onresult = (e) => {
+      const transcript = e.results[0][0].transcript;
+      onResult(transcript);
+    };
+    r.onerror = () => setState('idle');
+    r.onend = () => setState('idle');
+    recogRef.current = r;
+    r.start();
+    setState('listening');
+  }, [state, onResult]);
+
+  const stop = useCallback(() => {
+    recogRef.current?.stop();
+    setState('idle');
+  }, []);
+
+  return { state, start, stop };
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 const PURPLE = '#a855f7';
@@ -206,6 +257,18 @@ export function FormFiller() {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleSpeechResult = useCallback((text: string) => {
+    const reply = runCommand(text, fields, updateFieldRef.current);
+    setMessages(prev => [...prev, { role: 'user', content: text }, { role: 'ai', content: reply }]);
+  }, [fields]);
+
+  const speech = useSpeech(handleSpeechResult);
+
+  // stable ref so handleSpeechResult doesn't capture stale updateField
+  const updateFieldRef = useRef((id: string, value: string) =>
+    setFields(prev => prev.map(f => (f.id === id ? { ...f, value } : f)))
+  );
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -227,8 +290,7 @@ export function FormFiller() {
     setChatOpen(true);
   };
 
-  const updateField = (id: string, value: string) =>
-    setFields(prev => prev.map(f => (f.id === id ? { ...f, value } : f)));
+  const updateField = (id: string, value: string) => updateFieldRef.current(id, value);
 
   const send = () => {
     const text = chatInput.trim();
@@ -267,6 +329,7 @@ export function FormFiller() {
   // ── render ──────────────────────────────────────────────────────────────────
   return (
     <div style={{ minHeight: '100vh', background: '#030712', color: '#f1f5f9', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+      <style>{`@keyframes micPulse { 0%,100%{box-shadow:0 0 0 3px rgba(168,85,247,0.35)} 50%{box-shadow:0 0 0 7px rgba(168,85,247,0.12)} }`}</style>
 
       {/* Nav */}
       <nav style={{
@@ -483,7 +546,9 @@ export function FormFiller() {
             </div>
             <div>
               <div style={{ fontSize: 14, fontWeight: 700 }}>Form AI</div>
-              <div style={{ fontSize: 11, color: '#475569' }}>Tell me what to fill in</div>
+              <div style={{ fontSize: 11, color: speech.state === 'listening' ? '#c084fc' : '#475569' }}>
+                {speech.state === 'listening' ? '🎙 Listening…' : 'Talk or type to fill fields'}
+              </div>
             </div>
           </div>
 
@@ -506,17 +571,41 @@ export function FormFiller() {
 
           {/* input */}
           <div style={{ padding: '10px 12px 12px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, flexShrink: 0 }}>
+            {/* Mic button */}
+            {speech.state !== 'unsupported' && (
+              <button
+                onClick={() => speech.state === 'listening' ? speech.stop() : speech.start()}
+                title={speech.state === 'listening' ? 'Stop listening' : 'Speak a command'}
+                style={{
+                  width: 40, height: 40, borderRadius: 12, border: 'none',
+                  cursor: 'pointer', flexShrink: 0,
+                  background: speech.state === 'listening'
+                    ? `linear-gradient(135deg,${PURPLE},${PURPLE_DIM})`
+                    : 'rgba(255,255,255,0.07)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: speech.state === 'listening' ? `0 0 0 3px ${PURPLE}55` : 'none',
+                  animation: speech.state === 'listening' ? 'micPulse 1.2s ease-in-out infinite' : 'none',
+                  transition: 'background 0.15s, box-shadow 0.15s',
+                }}
+              >
+                {speech.state === 'listening'
+                  ? <MicOff size={16} color="white" />
+                  : <Mic size={16} color="#94a3b8" />}
+              </button>
+            )}
+
             <input
               ref={chatInputRef}
               type="text"
               value={chatInput}
               onChange={e => setChatInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && send()}
-              placeholder="Fill signature with J.Doe…"
+              placeholder={speech.state === 'listening' ? 'Listening…' : 'Say or type a command…'}
               style={{
                 flex: 1, padding: '10px 13px',
-                background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.09)',
+                background: 'rgba(255,255,255,0.06)', border: `1px solid ${speech.state === 'listening' ? `${PURPLE}50` : 'rgba(255,255,255,0.09)'}`,
                 borderRadius: 12, color: '#f1f5f9', fontSize: 13, outline: 'none',
+                transition: 'border-color 0.2s',
               }}
             />
             <button
