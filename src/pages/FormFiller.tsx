@@ -162,14 +162,18 @@ function runCommand(
     if (f) { onUpdate(f.id, ''); return `Cleared "${f.label}".`; }
   }
 
-  // fill / set / sign …
+  // fill / set / sign — broad verb list catches homophones after normalizeVoice
+  const FILL_VERBS = `fill|phil|feel|film|set|put|enter|type|write|add|sign|complete|update|change|make|input|place|insert`;
   const fillM = input.match(
-    /(?:fill(?:\s+in)?|set|put|enter|type|write|add|sign|complete|update|change)\s+(?:in\s+)?(?:the\s+)?(.+?)\s+(?:field\s+|line\s+|box\s+)?(?:with|as|to|=)\s+(.+)/i
+    new RegExp(
+      `(?:${FILL_VERBS})(?:\\s+in)?\\s+(?:in\\s+)?(?:the\\s+|a\\s+)?(.+?)\\s+(?:(?:field|line|box|area|section)\\s+)?(?:with|as|to|=|is)\\s+(.+)`,
+      'i'
+    )
   );
   if (fillM) {
-    const fq = fillM[1].trim();
+    const fq  = fillM[1].trim().replace(/\s*(field|line|box|area)$/i, '');
     const val = fillM[2].trim().replace(/[.!?]$/, '');
-    const f = findField(fq, fields);
+    const f   = findField(fq, fields);
     if (f) {
       onUpdate(f.id, val);
       return `Done! "${f.label}" → "${val}"`;
@@ -184,7 +188,22 @@ function runCommand(
     if (f) { onUpdate(f.id, eqM[2].trim()); return `Set "${f.label}" to "${eqM[2].trim()}".`; }
   }
 
-  return `I can help fill your form! Examples:\n• "Fill signature with J.Doe"\n• "Set date to 2024-01-15"\n• "Show fields" — list everything`;
+  // Implicit fill: "[field] [value]" with no command verb — last resort
+  // e.g. "signature J.Doe" or "name John Smith"
+  if (fields.length) {
+    const words = input.trim().split(/\s+/);
+    for (let split = 1; split < words.length; split++) {
+      const possibleField = words.slice(0, split).join(' ');
+      const possibleValue = words.slice(split).join(' ');
+      const f = findField(possibleField, fields);
+      if (f) {
+        onUpdate(f.id, possibleValue.replace(/[.!?]$/, ''));
+        return `Got it! "${f.label}" → "${possibleValue.replace(/[.!?]$/, '')}"`;
+      }
+    }
+  }
+
+  return `I can help fill your form! Try saying:\n• "Fill signature with J.Doe"\n• "Set name to John Smith"\n• "Show fields" — list everything`;
 }
 
 // ─── Speech hook ─────────────────────────────────────────────────────────────
@@ -195,45 +214,109 @@ interface ISpeechRecognition {
   continuous: boolean;
   interimResults: boolean;
   lang: string;
-  onresult: ((e: { results: { [i: number]: { [i: number]: { transcript: string } } } }) => void) | null;
+  onresult: ((e: {
+    resultIndex: number;
+    results: { [i: number]: { isFinal: boolean; [i: number]: { transcript: string } }; length: number };
+  }) => void) | null;
   onerror: (() => void) | null;
   onend: (() => void) | null;
   start(): void;
   stop(): void;
+  abort(): void;
 }
 type SpeechRecognitionCtor = new () => ISpeechRecognition;
 
-function useSpeech(onResult: (text: string) => void) {
+// Normalise phonetic mis-hearings before command parsing
+function normalizeVoice(raw: string): string {
+  return raw
+    .replace(/\b(phil|feel|film|heel|field in|fill in)\b/gi, 'fill')
+    .replace(/\bwith\b/gi, 'with')
+    .replace(/\b(centre|center)\b/gi, 'center')
+    .trim();
+}
+
+function useSpeech(
+  onResult: (text: string) => void,
+  onInterim: (text: string) => void,
+) {
   const [state, setState] = useState<SpeechState>(() =>
     typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)
       ? 'idle'
       : 'unsupported'
   );
-  const recogRef = useRef<ISpeechRecognition | null>(null);
+  const recogRef  = useRef<ISpeechRecognition | null>(null);
+  const activeRef = useRef(false);   // true while user wants mic on
+  const finalBuf  = useRef('');      // accumulated final transcript
+  const silenceT  = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const start = useCallback(() => {
-    if (state === 'unsupported') return;
+  const clearSilence = () => { if (silenceT.current) clearTimeout(silenceT.current); };
+
+  const flushAndStop = useCallback(() => {
+    clearSilence();
+    const text = finalBuf.current.trim();
+    finalBuf.current = '';
+    onInterim('');
+    activeRef.current = false;
+    recogRef.current?.abort();
+    setState('idle');
+    if (text) onResult(normalizeVoice(text));
+  }, [onResult, onInterim]);
+
+  const createSession = useCallback(() => {
     const w = window as unknown as { SpeechRecognition?: SpeechRecognitionCtor; webkitSpeechRecognition?: SpeechRecognitionCtor };
     const SR = w.SpeechRecognition ?? w.webkitSpeechRecognition!;
     const r = new SR();
-    r.continuous = false;
-    r.interimResults = false;
-    r.lang = 'en-US';
+    r.continuous      = true;   // don't stop on short pauses
+    r.interimResults  = true;   // stream partial results to the input
+    r.lang            = 'en-US';
+
     r.onresult = (e) => {
-      const transcript = e.results[0][0].transcript;
-      onResult(transcript);
+      let interim = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const t = e.results[i][0].transcript;
+        if (e.results[i].isFinal) finalBuf.current += ' ' + t;
+        else interim += t;
+      }
+      // Show live text in the input box
+      onInterim((finalBuf.current + ' ' + interim).trim());
+
+      // Auto-send after 1.8 s of silence mid-session
+      clearSilence();
+      silenceT.current = setTimeout(flushAndStop, 1800);
     };
-    r.onerror = () => setState('idle');
-    r.onend = () => setState('idle');
+
+    r.onerror = () => {
+      if (activeRef.current) {
+        // Restart on network blip, not on user abort
+        try { createSession(); return; } catch {}
+      }
+      setState('idle');
+    };
+
+    r.onend = () => {
+      // Browser forcibly ended — restart if user still wants mic on
+      if (activeRef.current) {
+        try { const s = createSession(); recogRef.current = s; s.start(); return; } catch {}
+      }
+      setState('idle');
+    };
+
     recogRef.current = r;
+    return r;
+  }, [flushAndStop, onInterim]);
+
+  const start = useCallback(() => {
+    if (state === 'unsupported') return;
+    finalBuf.current  = '';
+    activeRef.current = true;
+    const r = createSession();
     r.start();
     setState('listening');
-  }, [state, onResult]);
+  }, [state, createSession]);
 
   const stop = useCallback(() => {
-    recogRef.current?.stop();
-    setState('idle');
-  }, []);
+    flushAndStop();
+  }, [flushAndStop]);
 
   return { state, start, stop };
 }
@@ -259,11 +342,12 @@ export function FormFiller() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSpeechResult = useCallback((text: string) => {
+    setChatInput('');
     const reply = runCommand(text, fields, updateFieldRef.current);
     setMessages(prev => [...prev, { role: 'user', content: text }, { role: 'ai', content: reply }]);
   }, [fields]);
 
-  const speech = useSpeech(handleSpeechResult);
+  const speech = useSpeech(handleSpeechResult, (interim) => setChatInput(interim));
 
   // stable ref so handleSpeechResult doesn't capture stale updateField
   const updateFieldRef = useRef((id: string, value: string) =>
@@ -600,7 +684,8 @@ export function FormFiller() {
               value={chatInput}
               onChange={e => setChatInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && send()}
-              placeholder={speech.state === 'listening' ? 'Listening…' : 'Say or type a command…'}
+              placeholder={speech.state === 'listening' ? 'Listening — keep talking…' : 'Say or type a command…'}
+              readOnly={speech.state === 'listening'}
               style={{
                 flex: 1, padding: '10px 13px',
                 background: 'rgba(255,255,255,0.06)', border: `1px solid ${speech.state === 'listening' ? `${PURPLE}50` : 'rgba(255,255,255,0.09)'}`,
