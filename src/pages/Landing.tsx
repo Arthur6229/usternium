@@ -58,6 +58,17 @@ const projects: Project[] = [
     status: 'live',
     tags: ['AI', 'Forms', 'Tools'],
   },
+  {
+    name: 'TON 618',
+    description: 'Web proxy',
+    longDesc: 'A fully anonymous web proxy themed around the largest known black hole. Browse freely through the event horizon — UV + bare-mux + wisp transport.',
+    emoji: '🕳️',
+    color: '#c8813f',
+    gradient: 'linear-gradient(135deg,#c8813f,#7a4a1e)',
+    url: 'https://proxy.usternium.com',
+    status: 'live',
+    tags: ['Proxy', 'Privacy', 'Tools'],
+  },
 ];
 
 const statusStyle: Record<Project['status'], { bg: string; color: string; label: string }> = {
