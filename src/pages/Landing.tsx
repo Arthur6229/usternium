@@ -69,6 +69,17 @@ const projects: Project[] = [
     status: 'live',
     tags: ['Proxy', 'Privacy', 'Tools'],
   },
+  {
+    name: 'Aero',
+    description: 'Aerodynamics simulator',
+    longDesc: 'Real-time airflow simulator — watch coloured particles flow around spheres, squares, and 6 soccer ball presets. Control speed and spin to see Magnus effect and drag live.',
+    emoji: '🌬️',
+    color: '#22c55e',
+    gradient: 'linear-gradient(135deg,#22c55e,#15803d)',
+    url: 'https://aero.usternium.com',
+    status: 'live',
+    tags: ['Physics', 'Science', 'Interactive'],
+  },
 ];
 
 const statusStyle: Record<Project['status'], { bg: string; color: string; label: string }> = {
