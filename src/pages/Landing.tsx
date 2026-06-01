@@ -80,6 +80,17 @@ const projects: Project[] = [
     status: 'live',
     tags: ['Physics', 'Science', 'Interactive'],
   },
+  {
+    name: 'MathForm',
+    description: 'Symbol replicator game',
+    longDesc: 'Match 65+ mathematical expressions using fractions, roots, powers, and variables. Any equivalent form accepted — type (x+1)² to match x²+2x+1. Lives, combos, hints.',
+    emoji: '🧮',
+    color: '#a78bfa',
+    gradient: 'linear-gradient(135deg,#a78bfa,#7c3aed)',
+    url: 'https://math.usternium.com',
+    status: 'live',
+    tags: ['Math', 'Game', 'Puzzle'],
+  },
 ];
 
 const statusStyle: Record<Project['status'], { bg: string; color: string; label: string }> = {
